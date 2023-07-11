@@ -74,6 +74,10 @@ GOVERALLS = $(GOBIN)/goveralls
 $(GOBIN)/goveralls: | $(BASE) ; $(info  building goveralls...)
 	$Q go get github.com/mattn/goveralls
 
+HADOLINT_TOOL = $(BINDIR)/hadolint
+$(HADOLINT_TOOL): | $(BASE) ; $(info  installing hadolint...)
+	$(call wget-install-tool,$(HADOLINT_TOOL),"https://github.com/hadolint/hadolint/releases/download/v2.12.1-beta/hadolint-Linux-x86_64")
+
 # Tests
 .PHONY: lint
 lint: | $(BASE) $(GOLANGCI_LINT) ; $(info  running golangci-lint...) @ ## Run golangci-lint
@@ -82,6 +86,10 @@ lint: | $(BASE) $(GOLANGCI_LINT) ; $(info  running golangci-lint...) @ ## Run go
 		test -z "$$($(GOLANGCI_LINT) run | tee $(BASE)/test/lint.out)" || ret=1 ; \
 		cat $(BASE)/test/lint.out ; rm -rf $(BASE)/test ; \
 	 exit $$ret
+
+.PHONY: hadolint
+hadolint: $(BASE) $(HADOLINT_TOOL); $(info  running hadolint...) @ ## Run hadolint
+	$Q $(HADOLINT_TOOL) Dockerfile
 
 TEST_TARGETS := test-default test-bench test-short test-verbose test-race
 .PHONY: $(TEST_TARGETS) test-xml check test tests
@@ -126,3 +134,11 @@ clean: ; $(info  Cleaning...)	 ## Cleanup everything
 help: ## Show this message
 	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+define wget-install-tool
+@[ -f $(1) ] || { \
+echo "Downloading $(2)" ;\
+wget -O $(1) $(2);\
+chmod +x $(1) ;\
+}
+endef
