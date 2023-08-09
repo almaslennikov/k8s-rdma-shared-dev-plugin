@@ -5,9 +5,6 @@
 
 name: Publish Docker image
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
-
 on:
   push:
     tags:
@@ -18,6 +15,9 @@ jobs:
     name: Push amd64 image to ghcr.io
     runs-on: ubuntu-latest
     steps:
+      - name: Set repository as lower-case output variable
+        id: repo_name
+        run: echo ::set-output name=repository::$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
       - name: Check out the repo
         uses: actions/checkout@v3
 
@@ -35,7 +35,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ steps.repo_name.outputs.repository }}
           flavor: |
             latest=false
           tags: |
@@ -72,7 +72,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ steps.repo_name.outputs.repository }}
           flavor: |
             latest=false
           tags: |
@@ -109,7 +109,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ steps.repo_name.outputs.repository }}
           flavor: |
             latest=false
           tags: |
@@ -136,7 +136,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ steps.repo_name.outputs.repository }}
           flavor: |
             latest=false
           tags: |
